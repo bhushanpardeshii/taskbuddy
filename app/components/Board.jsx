@@ -51,6 +51,9 @@ const TaskCard = ({ task, index, onEditTask, onDeleteTask }) => {
 };
 
 const Column = ({ title, tasks, id, onEditTask, onDeleteTask }) => {
+  const todoTasks = tasks.filter((task) => task.status === "TO-DO");
+  const inProgressTasks = tasks.filter((task) => task.status === "IN-PROGRESS");
+  const completedTasks = tasks.filter((task) => task.status === "COMPLETED");
   const getBackgroundColor = () => {
     switch (id) {
       case "IN-PROGRESS":
@@ -63,17 +66,18 @@ const Column = ({ title, tasks, id, onEditTask, onDeleteTask }) => {
   };
 
   return (
-    <div className={"flex-1 min-w-[300px] rounded-lg p-4 bg-gray-100 "}>
+    <div className={"flex-1 max-w-[400px] rounded-lg p-4 bg-gray-100 "}>
       <div className="mb-4">
         <span className={`font-semibold uppercase p-2 rounded-md ${getBackgroundColor()} `}>{title}</span>
         
       </div>
+        
       <Droppable droppableId={id}>
         {(provided, snapshot) => (
           <div
             ref={provided.innerRef}
             {...provided.droppableProps}
-            className={`min-h-[200px] transition-colors ${
+            className={`min-h-svh transition-colors ${
               snapshot.isDraggingOver ? "bg-opacity-50" : ""
             }`}
           >
@@ -90,6 +94,7 @@ const Column = ({ title, tasks, id, onEditTask, onDeleteTask }) => {
           </div>
         )}
       </Droppable>
+    
     </div>
   );
 };
@@ -182,7 +187,8 @@ export default function Board({
             id="TO-DO"
             onEditTask={onEditTask}
             onDeleteTask={onDeleteTask}
-          />
+            />
+            
           <Column
             title="In Progress"
             tasks={inProgressTasks}
@@ -197,6 +203,7 @@ export default function Board({
             onEditTask={onEditTask}
             onDeleteTask={onDeleteTask}
           />
+         
         </div>
       </div>
     </DragDropContext>

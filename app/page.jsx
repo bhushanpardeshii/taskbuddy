@@ -1,121 +1,53 @@
-"use client"
-import { useState } from "react"
-import { Header } from "./components/header"
-import List from "./components/List"
-import Board from "./components/Board"
+"use client";
+import { auth, onAuthStateChanged, signInWithGoogle } from "@/lib/firebase";
+import Image from "next/image";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
-export default function Home() {
-  const [tasks, setTasks] = useState([]);
-  const [currentView, setCurrentView] = useState('list');
-  const [isAddingTask, setIsAddingTask] = useState(false);
-  const [selectedTasks, setSelectedTasks] = useState(new Set());
-  const [sortDirection, setSortDirection] = useState(null);
-  const [newTask, setNewTask] = useState({
-    title: "",
-    date: new Date(),
-    status: "",
-    category: "",
-  });
+export default function App() {
+  const router=useRouter()
+  const [user, setUser] = useState(null);
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        setUser(user);
+        router.push("/home"); // Redirect if user is authenticated
+      }
+    });
 
-  // Task management functions
-  const handleAddTask = () => {
-    if (!newTask.title) return;
-
-    const newTaskItem = {
-      id: Date.now(),
-      title: newTask.title,
-      date: newTask.date || new Date(),
-      status: newTask.status || "TO-DO",
-      category: newTask.category || "WORK",
-    };
-
-    const updatedTasks = [...tasks, newTaskItem];
-    if (sortDirection) {
-      setTasks(sortTasksByDate(updatedTasks, sortDirection));
-    } else {
-      setTasks(updatedTasks);
+    return () => unsubscribe();
+  }, [router]);
+  const handleLogin = async () => {
+    try {
+      const user = await signInWithGoogle();
+      if (user) {
+        router.push("/home"); // Navigate after successful login
+      }
+    } catch (error) {
+      console.error("Login failed:", error);
     }
-
-    setNewTask({
-      title: "",
-      date: new Date(),
-      status: "",
-      category: "",
-    });
-    setIsAddingTask(false);
-  };
-
-  const handleEditTask = (taskId) => {
-    const taskToEdit = tasks.find((task) => task.id === taskId);
-    setNewTask(taskToEdit);
-    setIsAddingTask(true);
-  };
-
-  const handleDeleteTask = (taskId) => {
-    setTasks(tasks.filter((task) => task.id !== taskId));
-  };
-
-  const handleUpdateTaskStatus = (taskId, newStatus) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task
-      )
-    );
-  };
-
-  const sortTasksByDate = (tasksToSort, direction) => {
-    return [...tasksToSort].sort((a, b) => {
-      const dateA = new Date(a.date).getTime();
-      const dateB = new Date(b.date).getTime();
-      return direction === 'asc' ? dateA - dateB : dateB - dateA;
-    });
-  };
-
-  const handleBulkStatusUpdate = (newStatus) => {
-    setTasks(tasks.map(task =>
-      selectedTasks.has(task.id)
-        ? { ...task, status: newStatus }
-        : task
-    ));
-    setSelectedTasks(new Set());
-  };
-
-  const handleBulkDelete = () => {
-    setTasks(tasks.filter(task => !selectedTasks.has(task.id)));
-    setSelectedTasks(new Set());
-  };
-
-  // Props to be passed to both List and Board components
-  const taskManagementProps = {
-    tasks,
-    isAddingTask,
-    selectedTasks,
-    sortDirection,
-    newTask,
-    onAddTask: handleAddTask,
-    onEditTask: handleEditTask,
-    onDeleteTask: handleDeleteTask,
-    onUpdateTaskStatus: handleUpdateTaskStatus,
-    onBulkStatusUpdate: handleBulkStatusUpdate,
-    onBulkDelete: handleBulkDelete,
-    setIsAddingTask,
-    setSelectedTasks,
-    setSortDirection,
-    setNewTask,
-    setTasks,
-  };
-  const handleViewChange = (view) => {
-    setCurrentView(view);
   };
   return (
-    <div className="min-h-screen ">
-     <Header onViewChange={handleViewChange} />
-      {currentView === 'list' ? (
-        <List {...taskManagementProps}/>
+    <div className="flex max-h-screen justify-between">
+      <div className="flex flex-col ml-20 justify-center items-center">
+      <p className="text-sm text-gray-600 mb-6  ">
+            Streamline your workflow and track progress effortlessly<br/> with our all-in-one task management app.
+          </p>
+      {user ? (
+        <p>Redirecting...</p>
       ) : (
-        <Board {...taskManagementProps}/>
+        <button
+          onClick={handleLogin}
+          className="w-[240px] bg-zinc-900 text-white hover:bg-zinc-800 text-white py-2 rounded-xl"
+        >
+          Sign in with Google
+        </button>
       )}
+      </div>
+      <div className="">
+        <Image src="/circles_bg.svg" alt="bg"  width={680} height={680}  objectFit="cover"/>
+      </div>
+      
     </div>
-  )
+  );
 }
-

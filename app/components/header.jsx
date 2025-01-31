@@ -5,7 +5,7 @@ import { Input } from "../../components/ui/input"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useState } from "react";
 
-export function Header({onViewChange}) {
+export function Header({onViewChange,onAddTaskClick,handleLogout}) {
   const [activeView, setActiveView] = useState('list');
 
   const handleViewChange = (view) => {
@@ -46,7 +46,8 @@ export function Header({onViewChange}) {
             />
             <AvatarFallback>A</AvatarFallback>
           </Avatar>
-          <Button className="rounded-xl hidden md:flex" variant="outline" size="sm">
+          <Button className="rounded-xl hidden md:flex" variant="outline" size="sm"  onClick={handleLogout}>
+           
             <Image src="/logout_icon.svg" alt="Logo" width={16} height={16} />
             Logout
           </Button>
@@ -54,7 +55,7 @@ export function Header({onViewChange}) {
       </div>
       <div className="flex mt-2 px-4 md:px-0 py-2 md:py-0 justify-between md:hidden">
 <div></div>
-      <Button className="bg-[#7B1984] rounded-full hover:bg-purple-700">ADD TASK</Button>
+      <Button className="bg-[#7B1984] md:hidden rounded-full hover:bg-purple-700" onClick={onAddTaskClick}>ADD TASK</Button>
       </div>
       <div className="flex flex-col px-4 md:px-0 pb-2 md:pb-0 gap-3 md:gap-0 md:flex-row md:items-center justify-between md:space-x-4 mt-4">
         <div className="flex flex-col gap-2 md:gap-0 md:flex-row md:space-x-4 md:items-center ">
@@ -82,7 +83,10 @@ export function Header({onViewChange}) {
             <Input placeholder="Search" className="pl-8 border rounded-full "
             />
           </div>
-          <Button className="bg-[#7B1984] hidden md:flex rounded-full hover:bg-purple-700">ADD TASK</Button>
+          <Button className="bg-[#7B1984] hidden md:flex rounded-full hover:bg-purple-700" onClick={() => {
+    // console.log("Add Task Clicked!"); 
+    onAddTaskClick();
+  }}>ADD TASK</Button>
         </div>
 
       </div>
