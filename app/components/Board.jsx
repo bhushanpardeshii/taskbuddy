@@ -1,5 +1,5 @@
 
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { MoreHorizontal } from "lucide-react";
 import {
   DropdownMenu,

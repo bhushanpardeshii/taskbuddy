@@ -49,7 +49,7 @@ export default function App() {
         )}
       </div>
       <div className="flex md:hidden">
-        <Image src="/mobile_bg.svg" layout="fill" objectFit="cover" />
+        <Image src="/mobile_bg.svg" alt="bg" layout="fill" objectFit="cover" />
       </div>
       <div className="hidden md:flex">
         <Image src="/circles_bg.svg" alt="bg" width={680} height={680} objectFit="cover" />
