@@ -19,9 +19,9 @@ export default function List({
   selectedTasks,
   sortDirection,
   newTask,
-  onAddTask,
   onEditTask,
   onDeleteTask,
+  handleDialogClose,
   onUpdateTaskStatus,
   onBulkStatusUpdate,
   onBulkDelete,
@@ -81,7 +81,7 @@ export default function List({
     });
   };
 
-  // Toggle sort direction
+
   const toggleSort = () => {
     const newDirection = sortDirection === null ? 'asc' :
       sortDirection === 'asc' ? 'desc' : null;
@@ -92,7 +92,6 @@ export default function List({
     }
   };
 
-  // Get sort icon based on current direction
   const getSortIcon = () => {
     switch (sortDirection) {
       case 'asc':
@@ -103,15 +102,8 @@ export default function List({
         return <ChevronsUpDown className="h-4 w-4" />;
     }
   };
-  const handleUpdateTaskStatus = (taskId, newStatus) => {
-    setTasks((prevTasks) =>
-      prevTasks.map((task) =>
-        task.id === taskId ? { ...task, status: newStatus } : task
-      )
-    );
-  };
+ 
 
-  // Filter tasks based on their status
   const todoTasks = tasks.filter((task) => task.status === "TO-DO");
   const inProgressTasks = tasks.filter((task) => task.status === "IN-PROGRESS");
   const completedTasks = tasks.filter((task) => task.status === "COMPLETED");
@@ -132,27 +124,11 @@ export default function List({
     setSelectedTasks(newSelected);
   };
 
-  // Bulk actions
-  const handleBulkStatusUpdate = (newStatus) => {
-    setTasks(tasks.map(task =>
-      selectedTasks.has(task.id)
-        ? { ...task, status: newStatus }
-        : task
-    ));
-    setSelectedTasks(new Set()); // Clear selection after action
-  };
-
-  const handleBulkDelete = () => {
-    setTasks(tasks.filter(task => !selectedTasks.has(task.id)));
-    setSelectedTasks(new Set());
-  };
   const onDragEnd = (result) => {
     const { source, destination } = result;
 
-    // If dropped outside any droppable area
     if (!destination) return;
 
-    // Get the appropriate task list based on status
     let taskList;
     switch (source.droppableId) {
       case "todo-list":
@@ -168,14 +144,12 @@ export default function List({
         return;
     }
 
-    // Reorder the tasks within the same list
     const reorderedTasks = reorderTasks(
       taskList,
       source.index,
       destination.index
     );
 
-    // Update the main tasks array while preserving tasks from other statuses
     const updatedTasks = tasks.filter(t => t.status !== taskList[0].status);
     setTasks([...updatedTasks, ...reorderedTasks]);
   };
@@ -207,13 +181,13 @@ export default function List({
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-black text-white rounded-xl mb-4">
-                <DropdownMenuItem onClick={() => handleBulkStatusUpdate("TO-DO")}>
+                <DropdownMenuItem onClick={() => onBulkStatusUpdate("TO-DO")}>
                   TO-DO
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleBulkStatusUpdate("IN-PROGRESS")}>
+                <DropdownMenuItem onClick={() => onBulkStatusUpdate("IN-PROGRESS")}>
                   IN-PROGRESS
                 </DropdownMenuItem>
-                <DropdownMenuItem onClick={() => handleBulkStatusUpdate("COMPLETED")}>
+                <DropdownMenuItem onClick={() => onBulkStatusUpdate("COMPLETED")}>
                   COMPLETED
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -221,7 +195,7 @@ export default function List({
             <Button
               variant="ghost"
               className="text-red-500 hover:text-red-400"
-              onClick={handleBulkDelete}
+              onClick={onBulkDelete}
             >
               Delete
             </Button>
@@ -263,7 +237,7 @@ export default function List({
       >
         <button
           onClick={() => setIsAddingTask(!isAddingTask)}
-          className="w-full border-b p-2 px-6 text-left text-gray-600 hover:bg-gray-50"
+          className="w-full hidden md:flex items-center gap-2 border-b p-2 px-6 text-left text-gray-600 hover:bg-gray-50"
         >
           <span className="text-[#7B1984] text-2xl font-extrabold">+</span> ADD TASK
         </button>
@@ -368,6 +342,7 @@ export default function List({
                   >
                     {(provided, snapshot) => (
                       <div
+                     
                         ref={provided.innerRef}
                         {...provided.draggableProps}
                         className={`grid grid-cols-5 items-center gap-4 border-b py-2 px-6 ${snapshot.isDragging ? "bg-white shadow-lg" : ""
@@ -375,17 +350,21 @@ export default function List({
                       >
                         <p
                           className="col-span-5 md:col-span-2  flex gap-1 items-center"
-                          {...provided.dragHandleProps} // This enables the dragging functionality on the drag_icon
+                          {...provided.dragHandleProps} 
+                        
                         >
                           <input
                             type="checkbox"
                             className="w-4 h-4 accent-[#7B1984]"
                             checked={selectedTasks.has(task.id)}
                             onChange={() => handleTaskSelection(task.id)}
+                            
                           />
                           <Image src="/drag_icon.svg" alt="drag" className="hidden md:flex" width={20} height={20} />
                           <Image src="/checkmark.svg" alt="checkmark" width={20} height={20} />
-                          {task.title}
+                          <span  onClick={() => onEditTask(task.id)}>
+                            {task.title}
+                            </span>
                         </p>
                         <p className="hidden md:flex">{format(task.date, "PP")}</p>
                         <div className="hidden md:flex">
@@ -398,17 +377,17 @@ export default function List({
                           </DropdownMenuTrigger>
                           <DropdownMenuContent  side="bottom" align="start">
                             <DropdownMenuItem
-                              onClick={() => handleUpdateTaskStatus(task.id, "TO-DO")}
+                              onClick={() =>  onUpdateTaskStatus(task.id, "TO-DO")}
                             >
                               TO-DO
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleUpdateTaskStatus(task.id, "IN-PROGRESS")}
+                              onClick={() =>  onUpdateTaskStatus(task.id, "IN-PROGRESS")}
                               >
                               IN-PROGRESS
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleUpdateTaskStatus(task.id, "COMPLETED")}
+                              onClick={() => onUpdateTaskStatus(task.id, "COMPLETED")}
                               >
                               COMPLETED
                             </DropdownMenuItem>
@@ -447,7 +426,8 @@ export default function List({
                                   Edit
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
-                                  onClick={() =>onDeleteTask(task.id)}
+                                  onClick={() =>{onDeleteTask(task.id)
+                                    ,handleDialogClose()}}
                                   className="font-bold text-red-500"
                                 >
                                   <Image
@@ -509,7 +489,7 @@ export default function List({
                       >
                         <p
                           className="col-span-5 md:col-span-2   flex gap-1 items-center"
-                          {...provided.dragHandleProps} // This enables the dragging functionality on the drag_icon
+                          {...provided.dragHandleProps}
                         >
                           <input
                             type="checkbox"
@@ -532,17 +512,17 @@ export default function List({
                           </DropdownMenuTrigger>
                           <DropdownMenuContent side="bottom" align="start">
                             <DropdownMenuItem
-                              onClick={() => handleUpdateTaskStatus(task.id, "TO-DO")}
+                              onClick={() =>  onUpdateTaskStatus(task.id, "TO-DO")}
                             >
                               TO-DO
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleUpdateTaskStatus(task.id, "IN-PROGRESS")}
+                              onClick={() =>  onUpdateTaskStatus(task.id, "IN-PROGRESS")}
                             >
                               IN-PROGRESS
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleUpdateTaskStatus(task.id, "COMPLETED")}
+                              onClick={() =>  onUpdateTaskStatus(task.id, "COMPLETED")}
                             >
                               COMPLETED
                             </DropdownMenuItem>
@@ -643,7 +623,7 @@ export default function List({
                       >
                         <p
                           className="col-span-5 md:col-span-2 line-through flex gap-1 items-center"
-                          {...provided.dragHandleProps} // This enables the dragging functionality on the drag_icon
+                          {...provided.dragHandleProps}
                         >
                           <input
                             type="checkbox"
@@ -666,17 +646,17 @@ export default function List({
                           </DropdownMenuTrigger>
                           <DropdownMenuContent side="bottom" align="start">
                             <DropdownMenuItem
-                              onClick={() => handleUpdateTaskStatus(task.id, "TO-DO")}
+                              onClick={() =>  onUpdateTaskStatus(task.id, "TO-DO")}
                               >
                               TO-DO
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleUpdateTaskStatus(task.id, "IN-PROGRESS")}
+                              onClick={() =>  onUpdateTaskStatus(task.id, "IN-PROGRESS")}
                               >
                               IN-PROGRESS
                             </DropdownMenuItem>
                             <DropdownMenuItem
-                              onClick={() => handleUpdateTaskStatus(task.id, "COMPLETED")}
+                              onClick={() =>  onUpdateTaskStatus(task.id, "COMPLETED")}
                               >
                               COMPLETED
                             </DropdownMenuItem>
